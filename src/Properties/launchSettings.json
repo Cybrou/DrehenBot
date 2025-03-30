@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DrehenBot": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
