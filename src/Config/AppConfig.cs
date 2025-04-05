@@ -10,6 +10,7 @@ namespace DrehenBot.Config
         {
             _conf = conf;
             Discord = _conf.GetSection("Discord").Get<Discord>() ?? new Discord();
+            SeedGenerator = _conf.GetSection("SeedGenerator").Get<SeedGenerator>() ?? new SeedGenerator();
 
             DiscordRoles = new List<DiscordRole>();
             foreach(var role in _conf.GetSection("DiscordRoles").GetChildren())
@@ -19,6 +20,8 @@ namespace DrehenBot.Config
         }
 
         public Discord Discord { get; set; }
+
+        public SeedGenerator SeedGenerator { get; set; }
 
         public IList<DiscordRole> DiscordRoles { get; set; }
 
