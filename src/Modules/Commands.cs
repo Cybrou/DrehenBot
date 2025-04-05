@@ -1,41 +1,36 @@
-﻿using Discord.Commands;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using Discord.Commands;
+using DrehenBot.Config;
 
 namespace DrehenBot.Modules
 {
-    public class Commands : ModuleBase<SocketCommandContext>
+    internal class Commands : ModuleBase<SocketCommandContext>
     {
-        [Command("ping")]
-        public Task Ping()
+        private AppConfig Config { get; set; }
+
+        public Commands(AppConfig config)
         {
-            return ReplyAsync("Pong!");
+            Config = config;
         }
 
         [Command("raceseed")]
-        public async Task RaceSeed(params String[] stringArray)
+        [Summary("Generate a race seed.")]
+        public async Task RaceSeed(
+            [Summary("An optional setting string")]
+            string? settingString
+        )
         {
-            const string URL = @"http://127.0.0.1:3500/s/";
-            if (stringArray.Length == 0)
+            if (string.IsNullOrEmpty(settingString))
             {
-                ReplyAsync("Please provide a seed.");
+                settingString = Config.SeedGenerator.DefaultSettingString;
             }
             else
             {
-                var folder = Directory.GetCurrentDirectory();
-                var rando = "\\TP\\Rando\\Generator\\bin\\Debug\\net8.0";
                 await ReplyAsync("Generating Seed...");
-                //Process p = Process.Start(folder + rando + "\\TPRandomizer.exe", "generate2 idnull " + $"{stringArray[0]}" + " true");
                 ProcessStartInfo psi = new ProcessStartInfo
                 {
-                    FileName = folder + rando + @"\\TPRandomizer.exe",
-                    Arguments = "generate2 idnull " + $"{stringArray[0]}" + " true",
+                    FileName = Config.SeedGenerator.GeneratorPath,
+                    Arguments = $"generate2 idnull {settingString} true",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
@@ -53,20 +48,19 @@ namespace DrehenBot.Modules
                     process.WaitForExit();
 
                     // Récupérer la dernière ligne contenant "SUCCESS:"
-                    string successLine = outputLines.LastOrDefault(line => line.StartsWith("SUCCESS:"));
+                    string? successLine = outputLines.LastOrDefault(line => line.StartsWith("SUCCESS:"));
 
                     if (!string.IsNullOrEmpty(successLine))
                     {
                         // Extraire la partie après "SUCCESS:"
                         string extractedValue = successLine.Substring(8).Trim(); // 8 = longueur de "SUCCESS:"
-                        await ReplyAsync("Seed generated. You can find it at :" + URL + extractedValue);
+                        await ReplyAsync($"Seed generated. You can find it at :{string.Format(Config.SeedGenerator.WebsiteUrl, extractedValue)}");
                     }
                     else
                     {
                         await ReplyAsync("An error has occured");
                     }
                 }
-                //await ReplyAsync("Seed generated. You can find it at " + URL);
             }
         }
     }

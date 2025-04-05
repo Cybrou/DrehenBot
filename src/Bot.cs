@@ -30,7 +30,7 @@ namespace DrehenBot
         {
             // Start Discord bot
             DiscordSocketConfig config = new DiscordSocketConfig();
-            config.GatewayIntents = Discord.GatewayIntents.All | GatewayIntents.GuildMembers;
+            config.GatewayIntents = Discord.GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers;
             _discord = new DiscordSocketClient(config);
             _commands = new CommandService();
             _discord.Log += Discord_Log;
