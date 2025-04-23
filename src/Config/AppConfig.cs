@@ -2,7 +2,7 @@
 
 namespace DrehenBot.Config
 {
-    internal class AppConfig
+    public class AppConfig
     {
         private IConfiguration _conf;
 

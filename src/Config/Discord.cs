@@ -1,6 +1,6 @@
 ﻿namespace DrehenBot.Config
 {
-    internal class Discord
+    public class Discord
     {
         public string ClientId { get; set; } = "";
         public string ClientSecret { get; set; } = "";

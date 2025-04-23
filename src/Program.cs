@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Discord.Commands;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -22,6 +23,7 @@ namespace DrehenBot
             // Services
             builder.ConfigureServices((hc, services) =>
             {
+                services.AddSingleton<CommandService>();
                 services.AddScoped<Bot>();
                 services.AddScoped<Config.AppConfig>();
             });

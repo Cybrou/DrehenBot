@@ -1,6 +1,6 @@
 ﻿namespace DrehenBot.Config
 {
-    internal class DiscordRole
+    public class DiscordRole
     {
         public DiscordRole(string label, long discordId)
         {

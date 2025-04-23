@@ -12,10 +12,12 @@ namespace DrehenBot
     {
         private const string RoleMessageIdFileName = "roleMessageId";
 
-        public Bot(Config.AppConfig appConfig, ILogger<Bot> log)
+        public Bot(Config.AppConfig appConfig, ILogger<Bot> log, IServiceProvider serviceProvider, CommandService commandService)
         {
             _appConfig = appConfig;
             _log = log;
+            _serviceProvider = serviceProvider;
+            _commandService = commandService;
         }
 
         private ILogger<Bot> _log;
@@ -23,8 +25,8 @@ namespace DrehenBot
         private DiscordSocketClient _discord;
         private SocketGuild _guild;
         private SocketTextChannel _channel;
-        private CommandService _commands;
-        private IServiceProvider _services;
+        private CommandService _commandService;
+        private IServiceProvider _serviceProvider;
 
         public async Task<int> Start(CancellationToken? cancellationToken = null)
         {
@@ -32,12 +34,8 @@ namespace DrehenBot
             DiscordSocketConfig config = new DiscordSocketConfig();
             config.GatewayIntents = Discord.GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers;
             _discord = new DiscordSocketClient(config);
-            _commands = new CommandService();
             _discord.Log += Discord_Log;
 
-            _services = new ServiceCollection()
-                .AddSingleton(_commands)
-                .BuildServiceProvider();
 
             await _discord.LoginAsync(Discord.TokenType.Bot, _appConfig.Discord.BotToken);
 
@@ -65,24 +63,40 @@ namespace DrehenBot
         public async Task RegisterCommandAsync()
         {
             _discord.MessageReceived += HandleCommandAsync;
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+            await _commandService.AddModulesAsync(Assembly.GetEntryAssembly(), _serviceProvider);
         }
 
         private async Task HandleCommandAsync(SocketMessage arg)
         {
             var message = arg as SocketUserMessage;
+            if (message == null)
+            {
+                return;
+            }
+
             var context = new SocketCommandContext(_discord, message);
             var channel = _discord.GetChannel(_appConfig.Discord.BotChannel) as SocketTextChannel;
 
-            if (message.Author.IsBot) return;
+            if (message.Author.IsBot)
+            {
+                return;
+            }
 
             int argPos = 0;
 
             if (message.HasStringPrefix("!", ref argPos))
             {
-                var result = await _commands.ExecuteAsync(context, argPos, _services);
-                if (!result.IsSuccess) Console.WriteLine(result.ErrorReason);
-                if(result.Error.Equals(CommandError.UnmetPrecondition)) await message.Channel.SendMessageAsync(result.ErrorReason);
+                var result = await _commandService.ExecuteAsync(context, argPos, _serviceProvider);
+
+                if (!result.IsSuccess)
+                {
+                    Console.WriteLine(result.ErrorReason);
+                }
+
+                if (result.Error.Equals(CommandError.UnmetPrecondition))
+                {
+                    await message.Channel.SendMessageAsync(result.ErrorReason);
+                }
             }
         }
 

@@ -1,8 +1,8 @@
 ﻿namespace DrehenBot.Config
 {
-    internal class SeedGenerator
+    public class SeedGenerator
     {
-        public string WebsiteUrl { get; set; } = "";
+        public string WebsiteUrlTemplate { get; set; } = "";
         public string GeneratorPath { get; set; } = "";
         public string DefaultSettingString { get; set; } = "";
     }
